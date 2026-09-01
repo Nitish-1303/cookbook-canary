@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "generator": "cookbook-canary",
+  "summary": {
+    "repo": "https://github.com/solari-sdk/solari-cookbook",
+    "ref": "main",
+    "startedAt": "2026-09-01T06:15:00.000Z",
+    "finishedAt": "2026-09-01T06:18:20.000Z",
+    "durationMs": 200000,
+    "prep": {
+      "machineId": "sbx_prep",
+      "snapshotId": "snap_1",
+      "cloneMs": 1800,
+      "installMs": 74000,
+      "examplesFound": 6,
+      "headSha": "abcdef123456"
+    },
+    "results": [
+      {
+        "name": "browser-scrape",
+        "dir": "examples/browser-scrape",
+        "runtime": "node",
+        "machineKind": "sandbox",
+        "machineId": "fork_browser-scrape",
+        "outcome": "fail",
+        "reason": "page did not contain \"Scraped 3 pages\"",
+        "durationMs": 14600,
+        "attempts": 1,
+        "run": {
+          "exitCode": 0,
+          "durationMs": 9400,
+          "stdoutTail": "listening on http://0.0.0.0:3000",
+          "stderrTail": ""
+        },
+        "preview": {
+          "url": "https://p3000.preview.test/?[redacted:preview-token]",
+          "status": 200,
+          "attempts": 4
+        },
+        "visual": {
+          "title": "Application error",
+          "missing": [
+            "Scraped 3 pages"
+          ],
+          "screenshotBase64": "iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAIAAAB1p1PmAAAAY0lEQVR4nO3PMQ2AMAAEwSswCwYWJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJvADXwYBAWQx7iEAAAAASUVORK5CYII=",
+          "sessionId": "sess_9f2c",
+          "replayUrl": "https://app.solari.dev/sessions/sess_9f2c/replay"
+        },
+        "solariPackages": [
+          "@solarisdk/browser"
+        ]
+      },
+      {
+        "name": "desktop-tour",
+        "dir": "examples/desktop-tour",
+        "runtime": "node",
+        "machineKind": "desktop",
+        "machineId": "dsk_71a",
+        "outcome": "timeout",
+        "reason": "timed out after 240.0s",
+        "durationMs": 240000,
+        "attempts": 2,
+        "run": {
+          "exitCode": 0,
+          "durationMs": 240000,
+          "stdoutTail": "opening the editor",
+          "stderrTail": "xdotool: no window matched"
+        },
+        "visual": {
+          "title": "",
+          "missing": [],
+          "screenshotBase64": "iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAIAAAB1p1PmAAAAY0lEQVR4nO3PMQ2AMAAEwSswCwYWJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJvADXwYBAWQx7iEAAAAASUVORK5CYII=",
+          "sessionId": "dsk_71a"
+        },
+        "streamUrl": "https://app.solari.dev/desktops/dsk_71a/stream",
+        "solariPackages": [
+          "@solarisdk/desktop"
+        ]
+      },
+      {
+        "name": "py-agent",
+        "dir": "examples/py-agent",
+        "runtime": "python",
+        "machineKind": "sandbox",
+        "machineId": "fork_py-agent",
+        "outcome": "fail",
+        "reason": "install: exited 1",
+        "durationMs": 12000,
+        "attempts": 1,
+        "install": {
+          "exitCode": 1,
+          "durationMs": 12000,
+          "stdoutTail": "",
+          "stderrTail": "ERROR: Could not find a version that satisfies the requirement solari-sdk==0.4.0"
+        },
+        "solariPackages": []
+      },
+      {
+        "name": "stream-chat",
+        "dir": "examples/stream-chat",
+        "runtime": "node",
+        "machineKind": "sandbox",
+        "machineId": "fork_stream-chat",
+        "outcome": "flake",
+        "reason": "network or upstream error",
+        "durationMs": 1900,
+        "attempts": 1,
+        "solariPackages": [
+          "@solarisdk/sandbox"
+        ]
+      },
+      {
+        "name": "notes",
+        "dir": "examples/notes",
+        "runtime": "unknown",
+        "machineKind": "sandbox",
+        "outcome": "skipped",
+        "reason": "no package.json or requirements.txt — cannot tell how to run it",
+        "durationMs": 0,
+        "attempts": 1,
+        "solariPackages": []
+      },
+      {
+        "name": "sandbox-runner",
+        "dir": "examples/sandbox-runner",
+        "runtime": "node",
+        "machineKind": "sandbox",
+        "machineId": "fork_sandbox-runner",
+        "outcome": "pass",
+        "reason": "ok",
+        "durationMs": 6100,
+        "attempts": 1,
+        "run": {
+          "exitCode": 0,
+          "durationMs": 6100,
+          "stdoutTail": "wrote 3 files",
+          "stderrTail": ""
+        },
+        "solariPackages": [
+          "@solarisdk/sandbox"
+        ]
+      }
+    ],
+    "totals": {
+      "pass": 1,
+      "fail": 2,
+      "skipped": 1,
+      "flake": 1,
+      "timeout": 1
+    },
+    "machineMinutes": 6.4,
+    "exitCode": 1
+  }
+}

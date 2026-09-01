@@ -1,0 +1,11 @@
+{
+  "repo": "https://github.com/solari-sdk/solari-cookbook",
+  "ref": "main",
+  "examplesDir": "examples",
+  "concurrency": 6,
+  "timeoutMs": 240000,
+  "retries": 1,
+  "maxMachineMinutes": 120,
+  "secrets": ["SOLARI_API_KEY"],
+  "overrides": {}
+}

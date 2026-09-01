@@ -1,0 +1,7 @@
+node_modules/
+dist/
+canary-out/
+*.tsbuildinfo
+.env
+.env.*
+.DS_Store

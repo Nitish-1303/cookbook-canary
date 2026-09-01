@@ -1,0 +1,77 @@
+name: cookbook canary
+
+on:
+  schedule:
+    # 06:15 UTC daily. Examples rot from the outside — a dependency ships a
+    # breaking minor, an API changes a default — so this has to run on a clock,
+    # not only on push.
+    - cron: "15 6 * * *"
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: git URL to check
+        required: false
+      ref:
+        description: branch or tag
+        required: false
+        default: main
+  pull_request:
+    paths:
+      - "examples/**"
+      - "canary.json"
+
+concurrency:
+  group: canary-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Run the canary
+        id: canary
+        env:
+          SOLARI_API_KEY: ${{ secrets.SOLARI_API_KEY }}
+        run: |
+          node src/cli.ts \
+            ${{ inputs.repo && format('--repo {0}', inputs.repo) || '' }} \
+            ${{ inputs.ref && format('--ref {0}', inputs.ref) || '' }} \
+            --out canary-out
+
+      # Always: a failed run is exactly the run whose evidence you want.
+      - name: Publish the report
+        if: always()
+        run: cat canary-out/report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on the PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = require("node:fs").readFileSync("canary-out/report.md", "utf8");
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Upload the dashboard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-report
+          path: canary-out/

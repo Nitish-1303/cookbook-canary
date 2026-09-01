@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cookbook canary — solari-sdk/solari-cookbook</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #16181d; --muted: #6b7280; --line: #e5e7eb; --card: #f9fafb;
+  --pass: #15803d; --fail: #b91c1c; --warn: #b45309; --skip: #6b7280;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #262b33; --card: #151a21;
+    --pass: #3fb950; --fail: #f85149; --warn: #d29922; --skip: #8b949e;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 2.5rem 1.25rem; background: var(--bg); color: var(--fg);
+  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+main { max-width: 60rem; margin: 0 auto; }
+h1 { font-size: 1.35rem; margin: 0 0 .35rem; letter-spacing: -.01em; }
+.sub { color: var(--muted); font-size: .875rem; margin: 0 0 1.75rem; }
+.tiles { display: flex; flex-wrap: wrap; gap: .625rem; margin-bottom: 1.75rem; }
+.tile {
+  border: 1px solid var(--line); border-radius: .625rem; padding: .7rem .95rem;
+  background: var(--card); min-width: 7rem;
+}
+.tile b { display: block; font-size: 1.5rem; font-weight: 620; line-height: 1.1; }
+.tile span { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { text-align: left; color: var(--muted); font-weight: 500; font-size: .75rem;
+     text-transform: uppercase; letter-spacing: .05em; padding: .5rem .6rem; }
+td { padding: .6rem; border-top: 1px solid var(--line); vertical-align: top; }
+code { font: .8125rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.dot { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; margin-right: .45rem; }
+.pass { color: var(--pass); } .pass .dot { background: var(--pass); }
+.fail, .timeout { color: var(--fail); } .fail .dot, .timeout .dot { background: var(--fail); }
+.flake { color: var(--warn); } .flake .dot { background: var(--warn); }
+.skipped { color: var(--skip); } .skipped .dot { background: var(--skip); }
+pre {
+  background: var(--card); border: 1px solid var(--line); border-radius: .5rem;
+  padding: .7rem .85rem; overflow-x: auto; font-size: .78125rem; margin: .6rem 0 0;
+}
+details { margin-top: .5rem; }
+summary { cursor: pointer; color: var(--muted); font-size: .8125rem; }
+img { max-width: 100%; border: 1px solid var(--line); border-radius: .5rem; margin-top: .6rem; }
+footer { margin-top: 2.5rem; color: var(--muted); font-size: .78125rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>solari-sdk/solari-cookbook</h1>
+  <p class="sub">
+    <code>main</code> at <code>abcdef123456</code>
+    · 200.0s wall clock
+    · 6.4 machine-minutes
+    · 2026-09-01T06:18:20.000Z
+  </p>
+  <div class="tiles"><div class="tile fail"><b>2</b><span>fail</span></div><div class="tile timeout"><b>1</b><span>timeout</span></div><div class="tile flake"><b>1</b><span>flake</span></div><div class="tile skipped"><b>1</b><span>skipped</span></div><div class="tile pass"><b>1</b><span>pass</span></div></div>
+  <table>
+    <thead><tr><th>result</th><th>example</th><th>ran on</th><th>time</th></tr></thead>
+    <tbody><tr>
+      <td class="fail"><span class="dot"></span>fail</td>
+      <td><code>browser-scrape</code><br><span style="color:var(--muted);font-size:.78125rem">page did not contain &quot;Scraped 3 pages&quot;</span><details><summary>evidence</summary><pre>listening on http://0.0.0.0:3000</pre><img alt="rendered page for browser-scrape" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAIAAAB1p1PmAAAAY0lEQVR4nO3PMQ2AMAAEwSswCwYWJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJvADXwYBAWQx7iEAAAAASUVORK5CYII="></details></td>
+      <td>node · sandbox</td>
+      <td>14.6s</td>
+    </tr><tr>
+      <td class="fail"><span class="dot"></span>fail</td>
+      <td><code>py-agent</code><br><span style="color:var(--muted);font-size:.78125rem">install: exited 1</span><details><summary>evidence</summary><pre>ERROR: Could not find a version that satisfies the requirement solari-sdk==0.4.0</pre></details></td>
+      <td>python · sandbox</td>
+      <td>12.0s</td>
+    </tr><tr>
+      <td class="timeout"><span class="dot"></span>timeout</td>
+      <td><code>desktop-tour</code><br><span style="color:var(--muted);font-size:.78125rem">timed out after 240.0s</span><details><summary>evidence</summary><pre>xdotool: no window matched</pre><img alt="desktop screen for desktop-tour" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyCAIAAAB1p1PmAAAAY0lEQVR4nO3PMQ2AMAAEwSswCwYWJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJmACJvADXwYBAWQx7iEAAAAASUVORK5CYII="></details></td>
+      <td>node · desktop</td>
+      <td>240.0s</td>
+    </tr><tr>
+      <td class="flake"><span class="dot"></span>flake</td>
+      <td><code>stream-chat</code><br><span style="color:var(--muted);font-size:.78125rem">network or upstream error</span></td>
+      <td>node · sandbox</td>
+      <td>1.9s</td>
+    </tr><tr>
+      <td class="skipped"><span class="dot"></span>skipped</td>
+      <td><code>notes</code><br><span style="color:var(--muted);font-size:.78125rem">no package.json or requirements.txt — cannot tell how to run it</span></td>
+      <td>unknown · sandbox</td>
+      <td>0ms</td>
+    </tr><tr>
+      <td class="pass"><span class="dot"></span>pass</td>
+      <td><code>sandbox-runner</code><br><span style="color:var(--muted);font-size:.78125rem">ok</span><details><summary>evidence</summary><pre>wrote 3 files</pre></details></td>
+      <td>node · sandbox</td>
+      <td>6.1s</td>
+    </tr></tbody>
+  </table>
+  <footer>
+    Every example ran alone on its own hardware-isolated microVM, forked from a single
+    prepared snapshot. Dependency installs happened once (74.0s),
+    not once per example. Credentials reached the run step only and are scrubbed from this page.
+  </footer>
+</main>
+</body>
+</html>
