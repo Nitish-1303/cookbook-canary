@@ -76,17 +76,18 @@ the bill. Snapshot-and-fork collapses it: install once in a prepared machine,
 snapshot, then fork per example.
 
 ```
-prep sandbox                 forks (concurrency-limited)
-┌────────────────────┐       ┌──────────────┐
-│ git clone          │       │ browser-      │ ✅ page said "Scraped 3 pages"
-│ discover examples  │  ──▶  │ scrape        │
-│ install all deps   │       ├──────────────┤
-│ snapshot ──────────┼──────▶│ sandbox-      │ ✅ exit 0
-└────────────────────┘       │ runner        │
-      killed before          ├──────────────┤
-      fan-out begins         │ py-agent      │ ❌ ModuleNotFoundError
-                             └──────────────┘
-   desktop-tour ─────────────▶ desktop VM      ⏱️ timed out, stream + screenshot
+                          ┌──────────────────┐
+  prep sandbox            │ browser-scrape   │  ❌ page never said "Scraped 3 pages"
+┌──────────────────┐      ├──────────────────┤
+│ git clone        │      │ sandbox-runner   │  ✅ exit 0
+│ discover         │ ──▶  ├──────────────────┤
+│ install all      │      │ py-agent         │  ❌ install: exited 1
+│ snapshot         │      ├──────────────────┤
+└──────────────────┘      │ stream-chat      │  ⚠️ network error → retried
+   killed before          └──────────────────┘
+   fan-out begins         ┌──────────────────┐
+                          │ desktop-tour     │  ⏱️ desktop VM: stream + screenshot
+                          └──────────────────┘
 ```
 
 The report footer quantifies what that bought on every run ("74.0s of installs
@@ -271,7 +272,3 @@ It is deliberately the thinnest layer in the project for exactly that reason,
 and if a method signature differs, that file is the only one that changes.
 
 MIT licensed.
-
-
-
-
