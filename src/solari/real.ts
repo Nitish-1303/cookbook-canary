@@ -27,8 +27,17 @@ import { shellQuote } from "../util/command.ts";
 export interface SolariCredentials {
   apiKey: string;
   baseUrl?: string;
+  /** Browser-only: `@solarisdk/browser` resolves a region to a URL. Ignored by the others. */
   region?: string;
 }
+
+/**
+ * `SandboxClientOptions.baseUrl` and `DesktopClientOptions.baseUrl` are required,
+ * not optional, and neither client understands `region` — only the browser client
+ * does. Omitting it leaves `HttpTransport` with an undefined base, so every call
+ * goes to `undefined/sandboxes` and the run dies on the first request.
+ */
+const DEFAULT_BASE_URL = "https://api.getsolari.com";
 
 /** Structural views of the SDK objects, so this file needs no generated types. */
 interface SandboxHandle {
@@ -234,8 +243,7 @@ interface DesktopClientModule {
 export function createSolariPool(creds: SolariCredentials): MachinePool {
   const clientOpts = {
     apiKey: creds.apiKey,
-    ...(creds.baseUrl ? { baseUrl: creds.baseUrl } : {}),
-    ...(creds.region ? { region: creds.region } : {}),
+    baseUrl: creds.baseUrl ?? DEFAULT_BASE_URL,
   };
 
   let sandboxes: InstanceType<SandboxClientModule["SandboxClient"]> | undefined;
