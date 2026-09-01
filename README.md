@@ -1,5 +1,7 @@
 # cookbook-canary
 
+[![cookbook canary](https://github.com/Nitish-1303/cookbook-canary/actions/workflows/canary.yml/badge.svg)](https://github.com/Nitish-1303/cookbook-canary/actions/workflows/canary.yml)
+
 Proves every example in a repo still runs — each one alone, on its own
 hardware-isolated microVM, built on [Solari](https://github.com/solari-sdk).
 
@@ -36,7 +38,8 @@ reports → ./canary-out
 [`docs/sample-report.md`](docs/sample-report.md) is what the maintainer reads —
 real output from the report layer for a synthetic run, alongside the
 [JSON](docs/sample-report.json) and the
-[HTML dashboard](docs/sample-report.html).
+[live HTML dashboard](https://nitish-1303.github.io/cookbook-canary/sample-report.html),
+published from `docs/` on every push.
 
 ## What a run does
 

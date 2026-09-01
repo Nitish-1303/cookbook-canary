@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cookbook-canary — sample report</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #16181d; --muted: #6b7280; --line: #e5e7eb; --card: #f9fafb; --link: #1a56db;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #262b33; --card: #151a21; --link: #6cb0ff;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 3rem 1.25rem; background: var(--bg); color: var(--fg);
+  font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+main { max-width: 40rem; margin: 0 auto; }
+h1 { font-size: 1.35rem; margin: 0 0 .5rem; letter-spacing: -.01em; }
+p { margin: 0 0 1.15rem; }
+.muted { color: var(--muted); font-size: .875rem; }
+a { color: var(--link); }
+ul { list-style: none; padding: 0; margin: 1.75rem 0 0; }
+li { border: 1px solid var(--line); border-radius: .625rem; background: var(--card); margin-bottom: .625rem; }
+li a { display: block; padding: .8rem 1rem; text-decoration: none; font-weight: 560; }
+li span { display: block; color: var(--muted); font-size: .8125rem; font-weight: 400; margin-top: .15rem; }
+code { font: .8125rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+</style>
+</head>
+<body>
+<main>
+  <h1>cookbook-canary</h1>
+  <p>Proves every example in a repo still runs — each one alone, on its own hardware-isolated
+     microVM, built on <a href="https://github.com/solari-sdk">Solari</a>.</p>
+  <p class="muted">These are sample reports: real output from the report layer for a
+     <strong>synthetic</strong> run, not a live run against the Solari API. Every credential-shaped
+     string in them has been through the redactor.</p>
+  <ul>
+    <li><a href="sample-report.html">HTML dashboard →<span>Standalone, dark-mode aware, screenshots inlined as data URIs</span></a></li>
+    <li><a href="sample-report.md">Markdown report →<span>What gets posted as a PR comment and written to the job summary</span></a></li>
+    <li><a href="sample-report.json">JSON artifact →<span>Schema-versioned, for dashboards built on top of a run</span></a></li>
+    <li><a href="https://github.com/Nitish-1303/cookbook-canary">Source on GitHub →<span>How a run works, why one microVM each, and what is not yet verified</span></a></li>
+  </ul>
+</main>
+</body>
+</html>
