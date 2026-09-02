@@ -97,8 +97,9 @@ export function formatCommand(parsed: ParsedCommand): string {
 
 /**
  * POSIX single-quote quoting, for the one place a shell is unavoidable: desktop
- * VMs expose `exec(cmd, {args})` with no documented `cwd` or `env`, so those get
- * emulated with `sh -lc`. Everything interpolated goes through here.
+ * VMs expose `exec(cmd, {args, cwd})` with no `env` field, so env vars get
+ * emulated with `sh -lc` — and `cwd` rides along the same path to keep one code
+ * path instead of two. Everything interpolated goes through here.
  */
 export function shellQuote(token: string): string {
   return `'${token.replace(/'/g, `'\\''`)}'`;
