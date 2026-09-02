@@ -13,6 +13,7 @@
 import type {
   BackgroundProcess,
   BrowserProbe,
+  Clock,
   CommandResult,
   DesktopSpec,
   ExecOptions,
@@ -22,6 +23,7 @@ import type {
   PreviewUrl,
   MachineSpec,
 } from "./types.ts";
+import { systemClock } from "./types.ts";
 import { shellQuote } from "../util/command.ts";
 
 export interface SolariCredentials {
@@ -29,6 +31,21 @@ export interface SolariCredentials {
   baseUrl?: string;
   /** Browser-only: `@solarisdk/browser` resolves a region to a URL. Ignored by the others. */
   region?: string;
+}
+
+/** Resolves an optional `@solarisdk/*` peer. A lazy `import()` in production. */
+export type ModuleLoader = (specifier: string) => Promise<unknown>;
+
+export interface AdapterOptions {
+  /**
+   * Test seam. Defaults to `import()`. Everything above this file is testable
+   * against `FakePool`; this is the equivalent for the file that FakePool exists
+   * to stand in for — inject a loader and the mappings below can be asserted
+   * with no peers installed, no API key, and no billable VM.
+   */
+  load?: ModuleLoader;
+  /** Test seam for the replay-upload backoff. Defaults to the real clock. */
+  clock?: Clock;
 }
 
 /**
@@ -75,9 +92,11 @@ interface DesktopHandle {
   close(): Promise<void>;
 }
 
-async function load<T>(specifier: string): Promise<T> {
+const importModule: ModuleLoader = (specifier) => import(specifier);
+
+async function load<T>(specifier: string, importer: ModuleLoader): Promise<T> {
   try {
-    return (await import(specifier)) as T;
+    return (await importer(specifier)) as T;
   } catch (cause) {
     throw new Error(
       `cookbook-canary needs ${specifier} for this run. Install it with \`npm i ${specifier}\`.`,
@@ -184,10 +203,11 @@ class DesktopMachine implements Machine {
   }
 
   /**
-   * Desktop `exec` documents `args` but not `cwd` or `env`, so those are
-   * emulated with a login shell. Every interpolated value is single-quoted and
-   * env names are checked against an identifier pattern, so a value containing
-   * `; rm -rf /` is passed as data.
+   * Desktop `exec` takes `args` and `cwd` but has no `env` field, so a login
+   * shell stands in whenever env vars are needed — and `cwd` goes through the
+   * same path to keep one code path rather than two. Every interpolated value is
+   * single-quoted and env names are checked against an identifier pattern, so a
+   * value containing `; rm -rf /` is passed as data.
    */
   async exec(cmd: string, opts: ExecOptions = {}): Promise<CommandResult> {
     const args = opts.args ?? [];
@@ -240,27 +260,28 @@ interface DesktopClientModule {
   };
 }
 
-export function createSolariPool(creds: SolariCredentials): MachinePool {
+export function createSolariPool(creds: SolariCredentials, opts: AdapterOptions = {}): MachinePool {
   const clientOpts = {
     apiKey: creds.apiKey,
     baseUrl: creds.baseUrl ?? DEFAULT_BASE_URL,
   };
+  const importer = opts.load ?? importModule;
 
   let sandboxes: InstanceType<SandboxClientModule["SandboxClient"]> | undefined;
   let desktops: InstanceType<DesktopClientModule["DesktopClient"]> | undefined;
 
   const sandboxClient = async () => {
-    sandboxes ??= new (await load<SandboxClientModule>("@solarisdk/sandbox")).SandboxClient(clientOpts);
+    sandboxes ??= new (await load<SandboxClientModule>("@solarisdk/sandbox", importer)).SandboxClient(clientOpts);
     return sandboxes;
   };
   const desktopClient = async () => {
-    desktops ??= new (await load<DesktopClientModule>("@solarisdk/desktop")).DesktopClient(clientOpts);
+    desktops ??= new (await load<DesktopClientModule>("@solarisdk/desktop", importer)).DesktopClient(clientOpts);
     return desktops;
   };
 
-  const openSandbox = async (opts: Record<string, unknown>): Promise<Machine> => {
+  const openSandbox = async (createOpts: Record<string, unknown>): Promise<Machine> => {
     const client = await sandboxClient();
-    const sbx = await client.create(opts);
+    const sbx = await client.create(createOpts);
     await sbx.connect?.();
     return new SandboxMachine(sbx);
   };
@@ -272,7 +293,10 @@ export function createSolariPool(creds: SolariCredentials): MachinePool {
       const client = await desktopClient();
       const desktop = await client.create({
         ...lifecycle(spec),
-        ...(spec?.resolution ? { resolution: spec.resolution } : {}),
+        // `CreateDesktopOptions.resolution` is the string `"1280x800"`, not a
+        // pair of numbers. Our own spec keeps the tuple because it is the nicer
+        // API; translating it is this file's whole job.
+        ...(spec?.resolution ? { resolution: `${spec.resolution[0]}x${spec.resolution[1]}` } : {}),
       });
       await desktop.connect?.();
       await desktop.health?.();
@@ -301,8 +325,21 @@ interface BrowserModule {
   };
 }
 
-export async function createBrowserProbe(creds: SolariCredentials): Promise<BrowserProbe> {
-  const mod = await load<BrowserModule>("@solarisdk/browser");
+/**
+ * A replay is uploaded by the far side *after* the session is released — the SDK
+ * documents it as available ~1–3s later — so asking once, immediately, mostly
+ * yields a 404 and a report with no replay links in it. Three asks spread over
+ * ~2.4s covers the documented window.
+ */
+const REPLAY_ATTEMPTS = 3;
+const REPLAY_DELAY_MS = 1_200;
+
+export async function createBrowserProbe(
+  creds: SolariCredentials,
+  opts: AdapterOptions = {},
+): Promise<BrowserProbe> {
+  const mod = await load<BrowserModule>("@solarisdk/browser", opts.load ?? importModule);
+  const clock = opts.clock ?? systemClock;
   const client = new mod.Solari({
     apiKey: creds.apiKey,
     ...(creds.baseUrl ? { baseUrl: creds.baseUrl } : {}),
@@ -333,11 +370,17 @@ export async function createBrowserProbe(creds: SolariCredentials): Promise<Brow
     /** Replays upload asynchronously after release, so this only works post-close. */
     async replayUrlFor(sessionId: string): Promise<string | undefined> {
       if (!closed) return undefined;
-      try {
-        return (await client.sessions.getReplayUrl(sessionId)).url;
-      } catch {
-        return undefined;
+      for (let attempt = 0; attempt < REPLAY_ATTEMPTS; attempt++) {
+        if (attempt > 0) await clock.sleep(REPLAY_DELAY_MS);
+        try {
+          const { url } = await client.sessions.getReplayUrl(sessionId);
+          if (url) return url;
+        } catch {
+          // Still uploading, or never recorded. Either way there is nothing to
+          // do but wait — a missing replay link must not fail a run.
+        }
       }
+      return undefined;
     },
 
     async close(): Promise<void> {

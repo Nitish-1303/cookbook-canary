@@ -29,7 +29,13 @@ export interface ExecOptions {
 /** Signed, short-lived URL onto a port inside a machine. */
 export interface PreviewUrl {
   url: string;
-  token: string;
+  /**
+   * Absent when the gateway does not sign the preview — `SessionHandle.previewUrl`
+   * declares it optional, and a public port needs no token. Anything putting this
+   * in a header has to check first: an undefined header value is rejected outright
+   * by the browser client rather than skipped.
+   */
+  token?: string;
 }
 
 export type MachineKind = "sandbox" | "desktop";

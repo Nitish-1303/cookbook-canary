@@ -224,7 +224,7 @@ other than what it says. `sh -c`/`bash -lc` are the explicit escape hatch.
 ## Tests
 
 ```bash
-npm test        # 94 tests, 21 suites
+npm test        # 125 tests, 25 suites
 npm run typecheck
 ```
 
@@ -263,15 +263,21 @@ reason is not obvious:
 
 ## Status
 
-Built and verified locally: 94 tests green, clean `tsc --strict` typecheck, CLI
+Built and verified locally: 125 tests green, clean `tsc --strict` typecheck, CLI
 smoke-tested end to end through `--dry-run` and every error path.
 
-Not yet verified: a live run against the Solari API. No `SOLARI_API_KEY` was
-available in the environment this was written in, so
 [`src/solari/real.ts`](src/solari/real.ts) — the adapter that maps these
-interfaces onto `SandboxClient`, `DesktopClient` and `Solari` — has been written
-against the documented SDK surface but never exercised against the real service.
-It is deliberately the thinnest layer in the project for exactly that reason,
-and if a method signature differs, that file is the only one that changes.
+interfaces onto `SandboxClient`, `DesktopClient` and `Solari` — is covered by
+[`test/real.test.ts`](test/real.test.ts), which asserts every mapping against
+fakes shaped from the typings shipped in `@solarisdk` 0.1.2 rather than from what
+the adapter wishes were true. Writing those tests caught two real wire-level
+defects: `previewUrl` may resolve without a token, and `CreateDesktopOptions.resolution`
+is the string `"1280x800"` rather than a pair of numbers.
+
+Not yet verified: a live run against the Solari API. No `SOLARI_API_KEY` was
+available in the environment this was written in, so the adapter has been
+asserted against the SDK's declared surface but never exercised against the real
+service. It is deliberately the thinnest layer in the project for exactly that
+reason, and if a method signature differs, that file is the only one that changes.
 
 MIT licensed.

@@ -32,7 +32,7 @@ export { SCHEMA_VERSION, toArtifact, toJson } from "./report/json.ts";
 export type { CanaryArtifact } from "./report/json.ts";
 
 export { createBrowserProbe, createSolariPool } from "./solari/real.ts";
-export type { SolariCredentials } from "./solari/real.ts";
+export type { AdapterOptions, ModuleLoader, SolariCredentials } from "./solari/real.ts";
 export { FakeClock, FakeMachine, FakePool } from "./solari/fake.ts";
 export type { FakePoolOptions, ScriptedResponse } from "./solari/fake.ts";
 

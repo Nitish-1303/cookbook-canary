@@ -384,9 +384,15 @@ async function verifyServing(
     if (probe.status >= 400) {
       verifyError = `preview returned ${probe.status}`;
     } else if (example.verify.expectText && example.verify.expectText.length > 0) {
-      const evidence = await verifyRenders(await ctx.getBrowser(), target, example.verify.expectText, {
-        "x-pinetree-preview-token": token,
-      });
+      const evidence = await verifyRenders(
+        await ctx.getBrowser(),
+        target,
+        example.verify.expectText,
+        // Only when the gateway actually signed one: a header whose value is
+        // undefined makes the browser client throw instead of omitting it, which
+        // would report a working example as broken.
+        token ? { "x-pinetree-preview-token": token } : undefined,
+      );
       visual = {
         title: evidence.title,
         missing: evidence.missing,
