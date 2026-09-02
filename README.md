@@ -1,5 +1,6 @@
 # cookbook-canary
 
+[![tests](https://github.com/Nitish-1303/cookbook-canary/actions/workflows/test.yml/badge.svg)](https://github.com/Nitish-1303/cookbook-canary/actions/workflows/test.yml)
 [![cookbook canary](https://github.com/Nitish-1303/cookbook-canary/actions/workflows/canary.yml/badge.svg)](https://github.com/Nitish-1303/cookbook-canary/actions/workflows/canary.yml)
 
 Proves every example in a repo still runs — each one alone, on its own
