@@ -14,7 +14,7 @@ desktops for the examples that need pixels.
 | Sample artifacts | [`report.md`](docs/sample-report.md) · [`report.json`](docs/sample-report.json) |
 | Requires | Node ≥ 22.18 (developed on 24.14.1); a Solari API key for live runs |
 | Runtime dependencies | none — the three `@solarisdk/*` packages are optional peers, loaded lazily |
-| Size | ~3.0k lines of source, ~2.0k lines of tests, 133 tests, zero `any` |
+| Size | ~3.0k lines of source, ~2.0k lines of tests, 134 tests, zero `any` |
 
 ## Contents
 
@@ -784,7 +784,7 @@ Two workflows, deliberately separate, because one is free and one is not.
 flowchart LR
   A["push / PR"] --> B["npm ci<br/>no SDK peers installed"]
   B --> C["npm run typecheck<br/>tsc --strict"]
-  C --> D["npm test<br/>133 tests"]
+  C --> D["npm test<br/>134 tests"]
   D --> E{"green?"}
   E -->|yes| F["merge"]
   E -->|no| G["blocked"]
@@ -839,7 +839,7 @@ cp canary-out/index.html docs/sample-report.html
 ## 7. Tests
 
 ```bash
-npm test        # 133 tests, 27 suites
+npm test        # 134 tests, 27 suites
 npm run typecheck
 ```
 
@@ -851,6 +851,7 @@ npm run typecheck
 | [`test/report.test.ts`](test/report.test.ts) | markdown, JSON schema, HTML escaping, redaction |
 | [`test/preview.test.ts`](test/preview.test.ts) | 425/401/5xx polling semantics |
 | [`test/util.test.ts`](test/util.test.ts) | classification, command parsing, pool ordering, deadlines |
+| [`test/issue.test.ts`](test/issue.test.ts) | the canary-red tracking issue: opened once, updated while red, closed on recovery |
 
 The whole orchestrator is tested with **no API key, no network, and no billable
 VMs**. `FakePool`/`FakeMachine`/`FakeClock` implement the port with scripted
@@ -910,7 +911,7 @@ src/
     markdown.ts      111   job summary and PR comment
     html.ts          138   standalone dashboard
     json.ts           34   machine-readable results
-test/                     7 files, 2145 lines, 133 tests
+test/                     7 files, 2161 lines, 134 tests
 .github/workflows/        test.yml (free gate) + canary.yml (real VMs)
 docs/                     GitHub Pages: the live sample dashboard
 canary.json               the config this repo runs against itself
@@ -922,7 +923,7 @@ canary.json               the config this repo runs against itself
 
 | | |
 | --- | --- |
-| 133 tests / 27 suites | green, ~1.5s, no network |
+| 134 tests / 27 suites | green, ~1.5s, no network |
 | `tsc --strict --noEmit` | clean, zero `any` in `src/` |
 | CI | [`test.yml`](.github/workflows/test.yml) green on every push, with no SDK peers installed |
 | `--dry-run` | exercised against this repo's own `canary.json` |
