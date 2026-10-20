@@ -2,6 +2,11 @@
  * Standalone HTML dashboard — one file, no assets, no network. Drop it on Pages
  * or open it from a CI artifact and it works, including the failure screenshots,
  * which are inlined as data URIs.
+ *
+ * The visual language matches the landing page: warm paper, near-black ink, a
+ * flat mustard accent, hard rules, square edges. Fonts stay on system stacks so
+ * the file never reaches for the network; code and log output sit on a black
+ * terminal band, the only dark surface on the light page.
  */
 
 import type { ExampleResult, RunSummary } from "../runner.ts";
@@ -23,48 +28,58 @@ function seconds(ms: number): string {
 
 const STYLE = `
 :root {
-  --bg: #ffffff; --fg: #16181d; --muted: #6b7280; --line: #e5e7eb; --card: #f9fafb;
-  --pass: #15803d; --fail: #b91c1c; --warn: #b45309; --skip: #6b7280;
+  --paper: #FAF7F2; --ink: #17140F; --ink-soft: #4A453C; --muted: #7A7264;
+  --mustard: #E9B83A; --line: #17140F; --band: #14110C; --band-ink: #EDE6D8;
+  --pass: #1E6B34; --fail: #B3261E; --warn: #8A5A00; --skip: #7A7264;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #262b33; --card: #151a21;
-    --pass: #3fb950; --fail: #f85149; --warn: #d29922; --skip: #8b949e;
+    --paper: #14110C; --ink: #EDE6D8; --ink-soft: #C9C1B0; --muted: #8C8574;
+    --mustard: #E9B83A; --line: #EDE6D8; --band: #0B0906; --band-ink: #EDE6D8;
+    --pass: #5FA86F; --fail: #E0705C; --warn: #E9B83A; --skip: #8C8574;
   }
 }
 * { box-sizing: border-box; }
 body {
-  margin: 0; padding: 2.5rem 1.25rem; background: var(--bg); color: var(--fg);
-  font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  margin: 0; padding: 0 0 3rem; background: var(--paper); color: var(--ink);
+  font: 15px/1.55 "Archivo", "Helvetica Neue", Arial, ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
 }
-main { max-width: 60rem; margin: 0 auto; }
-h1 { font-size: 1.35rem; margin: 0 0 .35rem; letter-spacing: -.01em; }
-.sub { color: var(--muted); font-size: .875rem; margin: 0 0 1.75rem; }
-.tiles { display: flex; flex-wrap: wrap; gap: .625rem; margin-bottom: 1.75rem; }
+.topline { border-bottom: 2px solid var(--line); padding: .9rem 1.25rem; font-size: .8rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+.topline .swatch { display: inline-block; width: .7rem; height: .7rem; background: var(--mustard); margin-right: .55rem; }
+main { max-width: 62rem; margin: 0 auto; padding: 2.5rem 1.25rem 0; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 .5rem; letter-spacing: -.03em; font-weight: 900; line-height: 1.05; }
+.sub { color: var(--muted); font-size: .875rem; margin: 0 0 1.25rem; }
+.verdict { font-size: clamp(1.2rem, 2.6vw, 1.7rem); font-weight: 800; letter-spacing: -.015em; margin: 0 0 1.75rem; }
+.verdict mark { background: var(--mustard); color: #17140F; padding: 0 .18em; }
+.tiles { display: flex; flex-wrap: wrap; margin-bottom: 2rem; border: 2px solid var(--line); }
 .tile {
-  border: 1px solid var(--line); border-radius: .625rem; padding: .7rem .95rem;
-  background: var(--card); min-width: 7rem;
+  flex: 1 0 6.5rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  margin: 0 -1px -1px 0; padding: .8rem 1.1rem; background: var(--paper);
 }
-.tile b { display: block; font-size: 1.5rem; font-weight: 620; line-height: 1.1; }
-.tile span { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
-th { text-align: left; color: var(--muted); font-weight: 500; font-size: .75rem;
-     text-transform: uppercase; letter-spacing: .05em; padding: .5rem .6rem; }
-td { padding: .6rem; border-top: 1px solid var(--line); vertical-align: top; }
-code { font: .8125rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
-.dot { display: inline-block; width: .55rem; height: .55rem; border-radius: 50%; margin-right: .45rem; }
+.tile.fail, .tile.timeout { background: var(--mustard); }
+.tile.fail span, .tile.timeout span { color: #17140F; }
+.tile b { display: block; font-size: 1.9rem; font-weight: 900; line-height: 1.05; letter-spacing: -.02em; }
+.tile span { color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; border-top: 2px solid var(--line); }
+th { text-align: left; color: var(--muted); font-weight: 700; font-size: .72rem;
+     text-transform: uppercase; letter-spacing: .1em; padding: .6rem .6rem .5rem; border-bottom: 1px solid var(--line); }
+td { padding: .65rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+code { font: .8125rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.dot { display: inline-block; width: .55rem; height: .55rem; margin-right: .45rem; }
 .pass { color: var(--pass); } .pass .dot { background: var(--pass); }
 .fail, .timeout { color: var(--fail); } .fail .dot, .timeout .dot { background: var(--fail); }
 .flake { color: var(--warn); } .flake .dot { background: var(--warn); }
 .skipped { color: var(--skip); } .skipped .dot { background: var(--skip); }
 pre {
-  background: var(--card); border: 1px solid var(--line); border-radius: .5rem;
-  padding: .7rem .85rem; overflow-x: auto; font-size: .78125rem; margin: .6rem 0 0;
+  background: var(--band); color: var(--band-ink); border: 1px solid var(--line);
+  padding: .75rem .9rem; overflow-x: auto; font-size: .78125rem; margin: .6rem 0 0;
 }
 details { margin-top: .5rem; }
-summary { cursor: pointer; color: var(--muted); font-size: .8125rem; }
-img { max-width: 100%; border: 1px solid var(--line); border-radius: .5rem; margin-top: .6rem; }
-footer { margin-top: 2.5rem; color: var(--muted); font-size: .78125rem; }
+summary { cursor: pointer; color: var(--muted); font-size: .8125rem; font-weight: 600; }
+summary:hover { color: var(--ink); background: var(--mustard); width: fit-content; }
+img { max-width: 100%; border: 1px solid var(--line); margin-top: .6rem; }
+footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 2px solid var(--line); color: var(--muted); font-size: .78125rem; }
 `;
 
 function evidence(result: ExampleResult): string {
@@ -81,6 +96,17 @@ function evidence(result: ExampleResult): string {
   }
   if (parts.length === 0) return "";
   return `<details><summary>evidence</summary>${parts.join("")}</details>`;
+}
+
+function verdict(summary: RunSummary): string {
+  const { totals } = summary;
+  const broken = totals.fail + totals.timeout;
+  if (broken === 0 && totals.pass > 0) {
+    const one = totals.pass === 1;
+    return `<mark>All ${totals.pass} runnable example${one ? "" : "s"} still work${one ? "s" : ""}.</mark>`;
+  }
+  if (broken === 0) return "<mark>Nothing was run.</mark>";
+  return `<mark>${broken} example${broken === 1 ? " is" : "s are"} broken.</mark>`;
 }
 
 export function renderHtml(summary: RunSummary): string {
@@ -113,6 +139,7 @@ export function renderHtml(summary: RunSummary): string {
 <style>${STYLE}</style>
 </head>
 <body>
+<div class="topline"><span class="swatch"></span>cookbook-canary · report</div>
 <main>
   <h1>${escapeHtml(repoName)}</h1>
   <p class="sub">
@@ -121,6 +148,7 @@ export function renderHtml(summary: RunSummary): string {
     · ${summary.machineMinutes} machine-minutes
     · ${escapeHtml(summary.finishedAt)}
   </p>
+  <p class="verdict">${verdict(summary)}</p>
   <div class="tiles">${tiles}</div>
   <table>
     <thead><tr><th>result</th><th>example</th><th>ran on</th><th>time</th></tr></thead>
