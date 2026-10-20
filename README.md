@@ -14,7 +14,7 @@ desktops for the examples that need pixels.
 | Sample artifacts | [`report.md`](docs/sample-report.md) · [`report.json`](docs/sample-report.json) |
 | Requires | Node ≥ 22.18 (developed on 24.14.1); a Solari API key for live runs |
 | Runtime dependencies | none — the three `@solarisdk/*` packages are optional peers, loaded lazily |
-| Size | ~3.0k lines of source, ~2.0k lines of tests, 125 tests, zero `any` |
+| Size | ~3.0k lines of source, ~2.0k lines of tests, 126 tests, zero `any` |
 
 ## Contents
 
@@ -159,7 +159,7 @@ flowchart TB
   REAL -.->|"lazy import()"| SDK
 ```
 
-The payoff is concrete. `real.ts` is 393 lines of mapping and nothing else — no
+The payoff is concrete. `real.ts` is 408 lines of mapping and nothing else — no
 retry policy, no classification, no reporting. If an SDK method signature drifts,
 that is the only file that changes, and the 94 tests covering everything above it
 keep passing untouched.
@@ -784,7 +784,7 @@ Two workflows, deliberately separate, because one is free and one is not.
 flowchart LR
   A["push / PR"] --> B["npm ci<br/>no SDK peers installed"]
   B --> C["npm run typecheck<br/>tsc --strict"]
-  C --> D["npm test<br/>125 tests"]
+  C --> D["npm test<br/>126 tests"]
   D --> E{"green?"}
   E -->|yes| F["merge"]
   E -->|no| G["blocked"]
@@ -839,7 +839,7 @@ cp canary-out/index.html docs/sample-report.html
 ## 7. Tests
 
 ```bash
-npm test        # 125 tests, 25 suites
+npm test        # 126 tests, 25 suites
 npm run typecheck
 ```
 
@@ -893,7 +893,7 @@ src/
   index.ts            56   public library surface
   solari/
     types.ts         139   the port — Machine, MachinePool, Clock, BrowserProbe
-    real.ts          393   the only file that imports @solarisdk/*
+    real.ts          408   the only file that imports @solarisdk/*
     fake.ts          266   in-memory pool used by every orchestrator test
   verify/
     http.ts           98   preview polling, 425/401 semantics
@@ -908,7 +908,7 @@ src/
     markdown.ts      111   job summary and PR comment
     html.ts          138   standalone dashboard
     json.ts           34   machine-readable results
-test/                     6 files, 2038 lines, 125 tests
+test/                     6 files, 2054 lines, 126 tests
 .github/workflows/        test.yml (free gate) + canary.yml (real VMs)
 docs/                     GitHub Pages: the live sample dashboard
 canary.json               the config this repo runs against itself
@@ -920,7 +920,7 @@ canary.json               the config this repo runs against itself
 
 | | |
 | --- | --- |
-| 125 tests / 25 suites | green, ~1.5s, no network |
+| 126 tests / 25 suites | green, ~1.5s, no network |
 | `tsc --strict --noEmit` | clean, zero `any` in `src/` |
 | CI | [`test.yml`](.github/workflows/test.yml) green on every push, with no SDK peers installed |
 | `--dry-run` | exercised against this repo's own `canary.json` |
@@ -944,13 +944,6 @@ the top item on the roadmap.
 
 Beyond that:
 
-- **`startBackground().wait()` returns `0` immediately.** The real
-  `CommandHandle` exposes a `wait()` that resolves on process exit; the adapter
-  does not thread it through, so `running()` only flips to `false` after an
-  explicit `kill()`. Background processes are used for dev servers that are
-  supposed to stay up while a preview URL is polled, so nothing depends on this
-  today — but a server that crashes on boot will look alive until the preview
-  poll times out, which is a slower and less obvious failure than it should be.
 - **`setIdleTimeout` is on the port and both adapters, and the runner never calls
   it.** The idle window is set once at machine creation via `MachineSpec`, which
   covers the normal case. Extending a window mid-run — a long install, a slow
@@ -976,19 +969,17 @@ Ordered by what would actually help, not by what is easiest:
 1. **A live run, committed as evidence.** One canary against the real cookbook
    with a real key, with `canary-out/` published to `docs/live-run/`. This closes
    §9.2's first item and is the only item that cannot be done without credentials.
-2. **Thread `CommandHandle.wait()` through `startBackground`.** Makes a dev server
-   that dies on boot fail fast and loudly instead of timing out a preview poll.
-3. **Per-example snapshots.** Snapshot after each install rather than once after
+2. **Per-example snapshots.** Snapshot after each install rather than once after
    all of them, so a slow install is paid for once, by one example, forever.
-4. **A desktop base snapshot**, so GUI examples stop re-cloning the repo.
-5. **Real Python isolation** — a venv per example, and uv when a lockfile is
+3. **A desktop base snapshot**, so GUI examples stop re-cloning the repo.
+4. **Real Python isolation** — a venv per example, and uv when a lockfile is
    present.
-6. **`--since <ref>`**, running only the examples whose files changed. The
+5. **`--since <ref>`**, running only the examples whose files changed. The
    snapshot machinery already makes a partial run cheap; discovery just has no
    notion of a diff.
-7. **A generic webhook reporter**, so the JSON report can reach somewhere that is
+6. **A generic webhook reporter**, so the JSON report can reach somewhere that is
    not GitHub.
-8. **Flake tracking across runs.** A verdict history would turn "this failed
+7. **Flake tracking across runs.** A verdict history would turn "this failed
    once" into "this fails 30% of the time", which is the number you actually want
    before deleting an example.
 

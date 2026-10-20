@@ -56,6 +56,7 @@ function sandboxHarness(config: { idField?: "id" | "sandboxId"; previewToken?: s
     closes: 0,
     startKills: 0,
     emit: undefined as ((chunk: Chunk) => void) | undefined,
+    exit: undefined as ((code: number) => void) | undefined,
   };
 
   const handle = {
@@ -75,8 +76,10 @@ function sandboxHarness(config: { idField?: "id" | "sandboxId"; previewToken?: s
           onData(handler: (chunk: Chunk) => void) {
             log.emit = handler;
           },
-          async wait() {
-            return 0;
+          wait() {
+            return new Promise<number>((resolve) => {
+              log.exit = resolve;
+            });
           },
           async kill() {
             log.startKills++;
@@ -290,6 +293,19 @@ describe("createSolariPool — sandbox mapping", () => {
     await proc.kill();
     assert.equal(proc.running(), false);
     assert.equal(log.startKills, 1);
+  });
+
+  it("notices when a background process dies on its own", async () => {
+    // A dev server that crashes on boot must stop looking alive, with its real exit code.
+    const { pool, log } = poolWith();
+    const proc = await (await pool.createSandbox()).startBackground?.("npm", { args: ["start"] });
+    assert.ok(proc);
+    assert.equal(proc.running(), true);
+
+    log.exit?.(3);
+    assert.equal(await proc.wait(), 3);
+    assert.equal(proc.running(), false);
+    assert.equal(log.startKills, 0, "no kill was needed");
   });
 });
 

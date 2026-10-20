@@ -76,6 +76,8 @@ interface SandboxHandle {
 }
 
 interface StartHandle {
+  /** Resolves when the process exits by itself; some SDK versions resolve a bare code, others a result object. */
+  wait?(): Promise<number | { exitCode?: number }>;
   onData(handler: (chunk: { stream: string; data: string }) => void): void;
   kill(): Promise<void>;
 }
@@ -149,10 +151,23 @@ class SandboxMachine implements Machine {
       if (chunk.stream === "stderr") stderr += chunk.data;
       else stdout += chunk.data;
     });
+    const exited: Promise<number> = handle.wait
+      ? handle.wait().then(
+          (res) => {
+            alive = false;
+            return typeof res === "number" ? res : (res.exitCode ?? 0);
+          },
+          () => {
+            // A dropped control channel means we can no longer see the process.
+            alive = false;
+            return 1;
+          },
+        )
+      : new Promise<number>(() => {});
     return {
       output: () => ({ stdout, stderr }),
       running: () => alive,
-      wait: async () => 0,
+      wait: () => exited,
       kill: async () => {
         alive = false;
         await handle.kill();
