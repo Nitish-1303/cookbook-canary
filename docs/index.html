@@ -3,47 +3,361 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>cookbook-canary — sample report</title>
+<title>cookbook-canary — do your examples still run?</title>
+<meta name="description" content="Proves every example in a repo still runs — each one alone, on its own hardware-isolated microVM.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Archivo:ital,wght@1,500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #ffffff; --fg: #16181d; --muted: #6b7280; --line: #e5e7eb; --card: #f9fafb; --link: #1a56db;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #262b33; --card: #151a21; --link: #6cb0ff;
-  }
+  --paper: #FAF7F2;
+  --ink: #17140F;
+  --ink-soft: #4A453C;
+  --muted: #7A7264;
+  --mustard: #E9B83A;
+  --mustard-deep: #C9921A;
+  --line: #17140F;
+  --band: #14110C;
+  --band-ink: #EDE6D8;
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
-  margin: 0; padding: 3rem 1.25rem; background: var(--bg); color: var(--fg);
-  font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 16px/1.55 "Archivo", "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-main { max-width: 40rem; margin: 0 auto; }
-h1 { font-size: 1.35rem; margin: 0 0 .5rem; letter-spacing: -.01em; }
-p { margin: 0 0 1.15rem; }
-.muted { color: var(--muted); font-size: .875rem; }
-a { color: var(--link); }
-ul { list-style: none; padding: 0; margin: 1.75rem 0 0; }
-li { border: 1px solid var(--line); border-radius: .625rem; background: var(--card); margin-bottom: .625rem; }
-li a { display: block; padding: .8rem 1rem; text-decoration: none; font-weight: 560; }
-li span { display: block; color: var(--muted); font-size: .8125rem; font-weight: 400; margin-top: .15rem; }
-code { font: .8125rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.25rem; }
+a { color: inherit; }
+
+/* ---------- top bar ---------- */
+.topbar { border-bottom: 2px solid var(--line); }
+.topbar .wrap {
+  display: flex; align-items: center; gap: .75rem;
+  padding-top: .9rem; padding-bottom: .9rem;
+}
+.logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+.logo svg { width: 26px; height: 26px; display: block; }
+.logo b { font-weight: 800; letter-spacing: -.01em; font-size: 1.05rem; }
+nav { margin-left: auto; display: flex; gap: 1.4rem; font-size: .85rem; font-weight: 600; }
+nav a { text-decoration: none; text-transform: uppercase; letter-spacing: .08em; }
+nav a:hover { background: var(--mustard); }
+@media (max-width: 640px) { nav { display: none; } }
+
+/* ---------- hero ---------- */
+.hero { border-bottom: 2px solid var(--line); padding: 4.5rem 0 3.5rem; }
+.index-tag {
+  font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em;
+  display: flex; gap: .6rem; align-items: center; margin-bottom: 1.6rem;
+}
+.index-tag .swatch { width: .8rem; height: .8rem; background: var(--mustard); display: inline-block; }
+h1 {
+  font-size: clamp(2.6rem, 7.2vw, 5.4rem);
+  line-height: .98; letter-spacing: -.035em; font-weight: 900;
+  margin: 0 0 1.4rem; max-width: 14ch;
+}
+h1 mark {
+  background: var(--mustard); color: var(--ink);
+  padding: 0 .12em; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+.hero p.lede { font-size: 1.2rem; max-width: 44rem; margin: 0 0 2rem; color: var(--ink-soft); }
+.hero p.lede b { color: var(--ink); }
+.cta { display: flex; flex-wrap: wrap; gap: .8rem; }
+.btn {
+  display: inline-block; padding: .85rem 1.4rem; font-weight: 700; font-size: .95rem;
+  text-decoration: none; border: 2px solid var(--ink); letter-spacing: .01em;
+}
+.btn.solid { background: var(--mustard); }
+.btn.solid:hover { background: var(--mustard-deep); }
+.btn.ghost:hover { background: var(--ink); color: var(--paper); }
+
+/* ---------- index strip ---------- */
+.strip { border-bottom: 2px solid var(--line); }
+.strip .wrap { display: grid; grid-template-columns: repeat(3, 1fr); }
+.strip .cell { padding: 1.4rem 1.25rem; border-left: 1px solid var(--line); }
+.strip .cell:first-child { border-left: 0; padding-left: 0; }
+.strip .num { font-size: 2.6rem; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
+.strip .num em { font-style: normal; background: var(--mustard); padding: 0 .08em; }
+.strip .lbl { font-size: .75rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-top: .4rem; font-weight: 600; }
+.strip .src { font-size: .7rem; color: var(--muted); }
+@media (max-width: 640px) {
+  .strip .wrap { grid-template-columns: 1fr; }
+  .strip .cell { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
+  .strip .cell:first-child { border-top: 0; }
+}
+
+/* ---------- section scaffolding ---------- */
+section.block { border-bottom: 2px solid var(--line); padding: 3.5rem 0; }
+.sec-head { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 2.2rem; }
+.sec-head .no { font-size: .85rem; font-weight: 800; background: var(--ink); color: var(--paper); padding: .2rem .5rem; }
+.sec-head h2 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); font-weight: 800; letter-spacing: -.025em; margin: 0; }
+.sec-head .hint { margin-left: auto; font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+@media (max-width: 640px) { .sec-head .hint { display: none; } }
+
+/* ---------- terminal band ---------- */
+.term {
+  background: var(--band); color: var(--band-ink);
+  border: 2px solid var(--ink); padding: 1.6rem 1.5rem; overflow-x: auto;
+}
+.term pre {
+  margin: 0; font: .82rem/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre;
+}
+.term .ok { color: #7DB87E; }
+.term .bad { color: #E0705C; }
+.term .warn { color: var(--mustard); }
+.term .dim { color: #8C8574; }
+
+/* ---------- 2x2 steps ---------- */
+.steps { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.step { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 1.8rem 1.5rem 1.6rem; }
+.step .n { font-size: 2.2rem; font-weight: 900; letter-spacing: -.02em; background: var(--mustard); display: inline-block; padding: 0 .35rem; line-height: 1.15; }
+.step h3 { font-size: 1.15rem; font-weight: 800; margin: 1rem 0 .5rem; letter-spacing: -.01em; }
+.step p { margin: 0; color: var(--ink-soft); font-size: .95rem; }
+@media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+
+/* ---------- status ---------- */
+.status { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 2px solid var(--ink); }
+.status .col { padding: 1.6rem 1.5rem; }
+.status .col + .col { border-left: 2px solid var(--ink); }
+.status .col.hot { background: var(--mustard); }
+.status h3 { margin: 0 0 1rem; font-size: .85rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
+.status ul { margin: 0; padding: 0; list-style: none; }
+.status li { padding: .55rem 0; border-top: 1px solid currentColor; font-size: .95rem; }
+.status li:first-child { border-top: 0; }
+.status li b { font-weight: 700; }
+.status .fine { font-size: .8rem; margin-top: 1rem; color: var(--ink-soft); }
+.status .hot .fine { color: var(--ink); }
+@media (max-width: 640px) {
+  .status { grid-template-columns: 1fr; }
+  .status .col + .col { border-left: 0; border-top: 2px solid var(--ink); }
+}
+
+/* ---------- reports list ---------- */
+.reports { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.reports li { border-bottom: 1px solid var(--line); }
+.reports a {
+  display: flex; align-items: baseline; gap: 1rem; padding: 1.1rem .25rem;
+  text-decoration: none; font-weight: 700; font-size: 1.15rem; letter-spacing: -.01em;
+}
+.reports a:hover { background: var(--mustard); }
+.reports a::after { content: "→"; margin-left: auto; font-weight: 900; }
+.reports a span { font-weight: 500; font-size: .85rem; color: var(--muted); }
+.reports a:hover span { color: var(--ink); }
+
+/* ---------- video slot ---------- */
+.video-slot {
+  border: 2px dashed var(--muted); min-height: 12rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: .85rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 600;
+  text-align: center; padding: 1rem;
+}
+
+/* ---------- footer ---------- */
+footer { padding: 2rem 0 3rem; font-size: .82rem; color: var(--muted); }
+footer .wrap { display: flex; gap: 1rem; flex-wrap: wrap; }
+footer b { color: var(--ink); }
+footer .right { margin-left: auto; }
 </style>
 </head>
 <body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="./">
+      <svg viewBox="0 0 64 64" role="img" aria-label="cookbook-canary logo">
+        <rect width="64" height="64" fill="#FAF7F2"/>
+        <rect x="6" y="6" width="52" height="52" fill="none" stroke="#17140F" stroke-width="7"/>
+        <path d="M19 33 L28.5 43 L46 21" fill="none" stroke="#E9B83A" stroke-width="8" stroke-linecap="square"/>
+      </svg>
+      <b>cookbook-canary</b>
+    </a>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#status">Status</a>
+      <a href="#reports">Reports</a>
+      <a href="https://github.com/Nitish-1303/cookbook-canary">GitHub</a>
+    </nav>
+  </div>
+</header>
+
 <main>
-  <h1>cookbook-canary</h1>
-  <p>Proves every example in a repo still runs — each one alone, on its own hardware-isolated
-     microVM, built on <a href="https://github.com/solari-sdk">Solari</a>.</p>
-  <p class="muted">These are sample reports: real output from the report layer for a
-     <strong>synthetic</strong> run, not a live run against the Solari API. Every credential-shaped
-     string in them has been through the redactor.</p>
-  <ul>
-    <li><a href="sample-report.html">HTML dashboard →<span>Standalone, dark-mode aware, screenshots inlined as data URIs</span></a></li>
-    <li><a href="sample-report.md">Markdown report →<span>What gets posted as a PR comment and written to the job summary</span></a></li>
-    <li><a href="sample-report.json">JSON artifact →<span>Schema-versioned, for dashboards built on top of a run</span></a></li>
-    <li><a href="https://github.com/Nitish-1303/cookbook-canary">Source on GitHub →<span>How a run works, why one microVM each, and what is not yet verified</span></a></li>
-  </ul>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="index-tag"><span class="swatch"></span>Example-rot detection · one microVM per example · built on Solari</div>
+      <h1>Do your <mark>examples</mark> still run?</h1>
+      <p class="lede">Example code rots quietly — a transitive dependency breaks, a default
+        changes, the README drifts — and nothing turns red, because <b>examples are not
+        tests</b>. cookbook-canary runs them: each one alone, on its own hardware-isolated
+        microVM, up to driving a real browser at the page and reading the rendered text back.</p>
+      <div class="cta">
+        <a class="btn solid" href="sample-report.html">See the sample report</a>
+        <a class="btn ghost" href="https://github.com/Nitish-1303/cookbook-canary">Source on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="strip">
+    <div class="wrap">
+      <div class="cell">
+        <div class="num"><em>3</em></div>
+        <div class="lbl">examples broken</div>
+        <div class="src">synthetic sample run, 6 examples</div>
+      </div>
+      <div class="cell">
+        <div class="num">6.4</div>
+        <div class="lbl">machine-minutes</div>
+        <div class="src">installs done once, not 6 times</div>
+      </div>
+      <div class="cell">
+        <div class="num">125</div>
+        <div class="lbl">tests, zero network</div>
+        <div class="src">tsc --strict clean · zero any</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="no">01</span>
+        <h2>What a run looks like</h2>
+        <span class="hint">stderr, unedited</span>
+      </div>
+      <div class="term">
+<pre><span class="dim">$</span> canary --repo https://github.com/solari-sdk/solari-cookbook
+prep machine sbx_prep up
+found 6 example(s) at abcdef123456
+installed browser-scrape (18.4s)
+installed sandbox-runner (12.1s)
+installed stream-chat (9.8s)
+<span class="bad">install failed: py-agent (12.0s)</span>
+snapshot snap_1 — forks start from here
+<span class="ok">pass sandbox-runner — ok</span>
+<span class="bad">fail browser-scrape — page did not contain "Scraped 3 pages"</span>
+<span class="bad">fail py-agent — install: exited 1</span>
+<span class="warn">flake stream-chat — network or upstream error</span>
+retry 1/1 for desktop-tour after: timed out
+<span class="bad">timeout desktop-tour — timed out</span>
+1 passed, 2 failed, 1 timed out, 1 flaky, 1 skipped in 200.0s (6.4 machine-minutes)
+reports → ./canary-out</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="no">02</span>
+        <h2>How it works</h2>
+        <span class="hint">prepare · fan out · prove · report</span>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <span class="n">01</span>
+          <h3>Prepare once</h3>
+          <p>One sandbox clones the repo, discovers the examples, infers how each is built
+            and started, installs every example's dependencies, and snapshots the result.</p>
+        </div>
+        <div class="step">
+          <span class="n">02</span>
+          <h3>Fan out</h3>
+          <p>Each example gets its own microVM forked from that snapshot, up to
+            <code>concurrency</code> at a time. A fork is a sub-second resume of an
+            already-installed tree.</p>
+        </div>
+        <div class="step">
+          <span class="n">03</span>
+          <h3>Prove it</h3>
+          <p>Exit code, or a stdout regex, or — for anything that serves — poll the preview
+            URL, then drive a real cloud browser at it and assert on the DOM. Failures keep
+            a screenshot and a session replay.</p>
+        </div>
+        <div class="step">
+          <span class="n">04</span>
+          <h3>Report</h3>
+          <p>Markdown for a PR comment, JSON for a dashboard, standalone HTML for
+            publishing. All three scrubbed of credentials.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="status">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="no">03</span>
+        <h2>Status, honestly</h2>
+        <span class="hint">verified vs not yet verified</span>
+      </div>
+      <div class="status">
+        <div class="col">
+          <h3>Verified</h3>
+          <ul>
+            <li><b>125 tests / 25 suites</b> — green in ~1.5s, no network</li>
+            <li><b>tsc --strict --noEmit</b> — clean, zero <code>any</code> in <code>src/</code></li>
+            <li><b>CI</b> — green on every push, no SDK peers installed</li>
+            <li><b>--dry-run</b> — exercised against this repo's own canary.json</li>
+          </ul>
+          <p class="fine">Everything above the SDK adapter — discovery, prep, fan-out,
+            retries, classification, budget, reporting — is proved end to end against a
+            hand-built fake.</p>
+        </div>
+        <div class="col hot">
+          <h3>Not yet verified</h3>
+          <ul>
+            <li><b>The Solari adapter has never made a live call.</b> No API key was
+              available while it was written; every mapping is derived from the published
+              typings, not the service.</li>
+            <li><b>The reports on this page are from a synthetic run</b>, not a live run
+              against the Solari API.</li>
+            <li><b>A live run is the top roadmap item</b> — it needs credentials and is the
+              only gap that cannot be closed without them.</li>
+          </ul>
+          <p class="fine">The risk is concentrated by design: one file, ~390 lines, each
+            mapping commented with the SDK surface it targets.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="reports">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="no">04</span>
+        <h2>Sample reports</h2>
+        <span class="hint">synthetic run · credentials scrubbed</span>
+      </div>
+      <ul class="reports">
+        <li><a href="sample-report.html">HTML dashboard<span>Standalone — no network, screenshots inlined as data URIs</span></a></li>
+        <li><a href="sample-report.md">Markdown report<span>What gets posted as a PR comment and written to the job summary</span></a></li>
+        <li><a href="sample-report.json">JSON artifact<span>Schema-versioned, for dashboards built on top of a run</span></a></li>
+        <li><a href="https://github.com/Nitish-1303/cookbook-canary">Source on GitHub<span>How a run works, why one microVM each, and what is not yet verified</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="no">05</span>
+        <h2>Demo video</h2>
+        <span class="hint">reserved</span>
+      </div>
+      <div class="video-slot">Demo video — slot reserved for the first live run</div>
+    </div>
+  </section>
+
 </main>
+
+<footer>
+  <div class="wrap">
+    <span><b>cookbook-canary</b> · MIT license</span>
+    <span class="right">Built by Nitish Yeluru</span>
+  </div>
+</footer>
+
 </body>
 </html>
